@@ -1,8 +1,16 @@
 local Logger = {}
 
+local log_levels = {
+    ['info'] = 1,
+    ['warning'] = 2,
+    ['error'] = 3,
+    ['debug'] = 4,
+}
+
 Logger.session_id = string.format("nvim-ide-log://%s-%s", "nvim-ide", vim.fn.rand())
 
-Logger.log_level = vim.log.levels.INFO
+-- Logger.log_level = vim.log.levels.INFO
+Logger.log_level = 'debug'
 
 Logger.buffer = (function()
     local buf = vim.api.nvim_create_buf(false, true)
@@ -32,15 +40,17 @@ Logger.new = function(subsys, component)
     end
 
     local function _log(level, fmt, ...)
-        local arg = {...}
-        local str = string.format("[%s] [%s] [%s]: ", level, self.subsys, self.component)
-        if arg ~= nil then
-            str = str .. string.format(fmt, unpack(arg))
-        else
-            str = str .. string.format(fmt)
+        if log_levels[Logger.log_level] >= log_levels[level] then
+            local arg = {...}
+            local str = string.format("[%s] [%s] [%s]: ", level, self.subsys, self.component)
+            if arg ~= nil then
+                str = str .. string.format(fmt, unpack(arg))
+            else
+                str = str .. string.format(fmt)
+            end
+            local lines = vim.fn.split(str, "\n")
+            vim.api.nvim_buf_set_lines(Logger.buffer, -1, -1, false, lines)
         end
-        local lines = vim.fn.split(str, "\n")
-        vim.api.nvim_buf_set_lines(Logger.buffer, -1, -1, false, lines)
     end
 
     function self.error(fmt, ...)
