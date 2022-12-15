@@ -2,11 +2,17 @@ local Logger = {}
 
 Logger.session_id = string.format("nvim-ide-log://%s-%s", "nvim-ide", vim.fn.rand())
 
+Logger.log_level = vim.log.levels.INFO
+
 Logger.buffer = (function()
     local buf = vim.api.nvim_create_buf(false, true)
     vim.api.nvim_buf_set_name(buf, Logger.session_id)
     return buf
 end)()
+
+Logger.set_log_level = function(level)
+    Logger.log_level = level
+end
 
 function Logger.open_log()
     vim.cmd("tabnew")
